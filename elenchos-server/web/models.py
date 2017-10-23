@@ -17,6 +17,7 @@ class Subscription(models.Model):
     welcome_message = models.CharField(max_length=16, default='OK')
     id_user = models.PositiveIntegerField()
     note = models.CharField(max_length=255, blank=True, null=True)
+
     creation_date = models.DateTimeField(auto_now_add=True)
     last_edit = models.DateTimeField(auto_now=True)
 
@@ -45,3 +46,5 @@ class Log(models.Model):
     ts = models.DateTimeField()
     in_out = models.PositiveIntegerField(choices=((0, 'Entrata'), (1, 'Uscita')), default=0)
     action = models.PositiveIntegerField(choices=ACTIONS, default=1)
+
+    # TODO populate data ora in a post_save

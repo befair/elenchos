@@ -3,10 +3,12 @@ from __future__ import unicode_literals
 
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
 
 from web.models import Subscription, Log
 
-
+@csrf_exempt
 def gate_api(request, id_rfid):
 
     subscription = Subscription.objects.filter(id_rfid__iexact=id_rfid).first()
