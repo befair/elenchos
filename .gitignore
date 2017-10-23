@@ -1,3 +1,10 @@
+elenchos-server/web/migrations/0*
+elenchos-server/elenchos/settings.py
+elenchos-server/.vscode
+*.swp
+*.pyc
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
