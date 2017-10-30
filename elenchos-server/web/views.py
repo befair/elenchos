@@ -4,40 +4,39 @@ from __future__ import unicode_literals
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 
+from .decorators import ip_whitelisted
 from web.models import Subscription, Log
 
-# TODO: whitelist indirizzi IP abilitati
+
 # DESIDERATA: meccanismo csrf implementato (Arduino fa una GET periodica al server)
+@require_http_methods(["POST"])
 @csrf_exempt
+@ip_whitelisted
 def gate_api(request, id_rfid):
 
     # TODO: accedere solo con una POST
 
-    subscription = Subscription.objects.filter(id_rfid__iexact=id_rfid).first()
+    subscription = Subscription.objects.filter(rfid__iexact=id_rfid).first()
 
     if subscription:
         response = 'OK'
+        status_code = 200
     else:
         response = 'KO'
+        status_code = 403
 
     now = timezone.now()
     local_time = timezone.localtime(now)
 
-    # TODO: data e ora, ora sono str_date e str_time e vanno
-    # valorizzati nella save() del modello
-    Log.objects.create(
-        subscription=subscription,
-        id_rfid=id_rfid,
-        id_user=subscription.id_user if subscription else None,
-        data=local_time.strftime('%d%m%Y'),
-        ora=local_time.strftime('%H%M'),
-        ts=now,
+    new_log = Log(
+        ext_user_id=subscription,
+        rfid=id_rfid,
+        created_on=now,
         action=1 if subscription else 0,
     )
+    new_log.save()
 
-    # TODO: statuscode per la risposta:
-    # 403 negazione permesso
-    # 200 successo
-    return HttpResponse(response)
+    return HttpResponse(response, status=status_code)
