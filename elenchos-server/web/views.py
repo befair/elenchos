@@ -17,8 +17,6 @@ from web.models import Subscription, Log
 @ip_whitelisted
 def gate_api(request, id_rfid):
 
-    # TODO: accedere solo con una POST
-
     subscription = Subscription.objects.filter(rfid__iexact=id_rfid).first()
 
     if subscription:
