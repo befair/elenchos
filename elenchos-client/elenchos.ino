@@ -1,3 +1,11 @@
+/* TODO: hw mancante / da far funzionare
+
+- relay: quanto lungo l'impulso? logica diretta o negata (connessione hw differente)
+- display
+- buzzer
+- led
+*/
+
 // required for the Ethernet Shield
 #include <Ethernet.h>
 #include <EthernetUdp.h>
@@ -77,6 +85,10 @@ void loop() {
   while (client.available()) {
     char c = client.read();
     Serial.print(c);
+    // TODO: parsing della risposta HTTP:
+    // 403 permesso negato
+    // 200 ok
+    // l'ultima riga contiene il messaggio
   }
 
   // if the server's disconnected, stop the client:
