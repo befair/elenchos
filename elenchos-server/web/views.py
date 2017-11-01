@@ -20,10 +20,10 @@ def gate_api(request, id_rfid):
     subscription = Subscription.objects.filter(rfid__iexact=id_rfid).first()
 
     if subscription:
-        response = 'OK'
+        response = subscription.welcome_msg
         status_code = 200
     else:
-        response = 'KO'
+        response = 'ACCESSO NEGATO'
         status_code = 403
 
     now = timezone.now()
