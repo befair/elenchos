@@ -21,7 +21,12 @@ def gate_api(request, id_rfid):
 
     if subscription:
         response = subscription.welcome_msg
-        status_code = 200
+        if subscription.action == 0:
+            status_code = 403
+        if subscription.action == 1:
+            status_code = 200
+        if subscription.action == 2:
+            status_code = 402
     else:
         response = 'ACCESSO NEGATO'
         status_code = 403
@@ -33,7 +38,7 @@ def gate_api(request, id_rfid):
         ext_user_id=subscription,
         rfid=id_rfid,
         created_on=now,
-        action=1 if subscription else 0,
+        action=subscription.action if subscription else 0,
     )
     new_log.save()
 

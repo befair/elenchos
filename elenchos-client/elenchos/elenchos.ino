@@ -29,11 +29,11 @@ byte readCard[16];
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "192.168.1.10";
+char server[] = "192.168.1.8";
 int port = 8000;
 String response;
 int statusCode = 0;
-IPAddress ip(192, 168, 42, 99);
+IPAddress ip(192, 168, 1, 42);
 EthernetClient eth_client;
 HttpClient client = HttpClient(eth_client, server, port);
 
@@ -55,8 +55,9 @@ void setup() {
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
-  //Ethernet.begin(mac, ip);
-  delay(2000);
+  Serial.print("My ip:");
+  Serial.println(Ethernet.localIP());
+  delay(1000);
   Serial.println("READY");
 
 }
@@ -93,9 +94,10 @@ void loop() {
 
   if(statusCode == 200) {
     Serial.println("VARCO APERTO");
-    digitalWrite(RELAY1, LOW);
-    delay(2000);
-    digitalWrite(RELAY1, HIGH);
+    openGate();  
+  } else if (statusCode == 402) {
+    Serial.println("ACCESSO CONSENTITO: GIALLO"); 
+    openGate();
   } else {
     Serial.println("ACCESSO NEGATO"); 
   }
@@ -103,3 +105,10 @@ void loop() {
   ID = "";
   mfrc522.PICC_HaltA();
 }
+
+void openGate() {
+  digitalWrite(RELAY1, LOW);
+  delay(2000);
+  digitalWrite(RELAY1, HIGH);
+}
+

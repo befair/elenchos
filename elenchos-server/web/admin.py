@@ -7,7 +7,7 @@ from .models import Subscription, Log, WhitelistedIP
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('rfid', 'ext_user_id', 'welcome_msg', 'logs_count')
+    list_display = ('rfid', 'ext_user_id', 'welcome_msg', 'action', 'logs_count')
 
 @admin.register(Log)
 class LogAdmin(admin.ModelAdmin):
