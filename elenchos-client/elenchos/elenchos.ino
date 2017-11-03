@@ -1,9 +1,5 @@
 /* TODO: hw mancante / da far funzionare
-
-- relay: quanto lungo l'impulso? logica diretta o negata (connessione hw differente)
-- display
-- buzzer
-- led
+  - display
 */
 
 // required for the Ethernet Shield
@@ -22,14 +18,18 @@
 
 #define RST_PIN    8
 #define SS_PIN     9
-#define RELAY1     6
+#define RELAY1     7
+#define LED_RED    4
+#define LED_YELLOW 5
+#define LED_GREEN  6
+#define BUZZER     3
 
 String ID;
 byte readCard[16];
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "192.168.1.8";
+char server[] = "192.168.1.13";
 int port = 8000;
 String response;
 int statusCode = 0;
@@ -43,6 +43,10 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   }
   pinMode(RELAY1, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
   digitalWrite(RELAY1, HIGH);
   // Init SPI bus
   SPI.begin();
@@ -50,11 +54,14 @@ void setup() {
   mfrc522.PCD_Init();
   
   // start the Ethernet connection:
+  /*
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
+  */
+  Ethernet.begin(mac, ip);
   Serial.print("My ip:");
   Serial.println(Ethernet.localIP());
   delay(1000);
@@ -94,21 +101,37 @@ void loop() {
 
   if(statusCode == 200) {
     Serial.println("VARCO APERTO");
-    openGate();  
+    openGate(LED_GREEN);  
   } else if (statusCode == 402) {
     Serial.println("ACCESSO CONSENTITO: GIALLO"); 
-    openGate();
+    openGate(LED_YELLOW);
   } else {
     Serial.println("ACCESSO NEGATO"); 
+    digitalWrite(BUZZER, HIGH);
+    digitalWrite(LED_RED, HIGH);
+    delay(500);
+    digitalWrite(BUZZER, LOW);
+    delay(500);
+    digitalWrite(BUZZER, HIGH);
+    delay(500);
+    digitalWrite(BUZZER, LOW);
+    delay(500);
+    digitalWrite(LED_RED, LOW);
   }
 
   ID = "";
   mfrc522.PICC_HaltA();
 }
 
-void openGate() {
+void openGate(int led) {
   digitalWrite(RELAY1, LOW);
-  delay(2000);
+  digitalWrite(led, HIGH);
+  digitalWrite(BUZZER, HIGH);
+  delay(500);
+  digitalWrite(BUZZER, LOW);
+  delay(1500);
   digitalWrite(RELAY1, HIGH);
+  digitalWrite(led, LOW);
+  
 }
 
