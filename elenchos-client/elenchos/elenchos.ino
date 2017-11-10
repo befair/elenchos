@@ -1,6 +1,15 @@
-/* TODO: hw mancante / da far funzionare
-  - display
-*/
+
+/***************************************
+ * CONFIGURAZIONE
+ */
+// indirizzo IP del server
+char server[] = "192.168.1.9";
+// porta TCP del server (HTTP)
+int port = 8000;
+// indirizzo IP del client di fallback se DHCP fallisce
+IPAddress ip(192, 168, 1, 42);
+/***************************************/
+/***************************************/
 
 // required for the Ethernet Shield
 #include <Ethernet.h>
@@ -16,6 +25,11 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
+// required for the LCD
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x3F,16,2);
+
 #define RST_PIN    8
 #define SS_PIN     9
 #define RELAY1     7
@@ -29,11 +43,9 @@ byte readCard[16];
 MFRC522 mfrc522(SS_PIN, RST_PIN); 
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "192.168.1.13";
-int port = 8000;
 String response;
 int statusCode = 0;
-IPAddress ip(192, 168, 1, 42);
+
 EthernetClient eth_client;
 HttpClient client = HttpClient(eth_client, server, port);
 
@@ -48,25 +60,42 @@ void setup() {
   pinMode(LED_GREEN, OUTPUT);
   pinMode(BUZZER, OUTPUT);
   digitalWrite(RELAY1, HIGH);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print("s");
+  lcd.print(server);
+  lcd.setCursor(0,1);
+  lcd.print("DHCP ...");
+
+  Serial.print("server IP: ");
+  Serial.println(server);
+  Serial.println("DHCP...");
+  
   // Init SPI bus
   SPI.begin();
   // Init MFRC522
   mfrc522.PCD_Init();
   
   // start the Ethernet connection:
-  /*
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // try to congifure using IP address instead of DHCP:
     Ethernet.begin(mac, ip);
   }
-  */
-  Ethernet.begin(mac, ip);
   Serial.print("My ip:");
   Serial.println(Ethernet.localIP());
-  delay(1000);
+  lcd.setCursor(0,1);
+  lcd.print("c");
+  lcd.print(Ethernet.localIP());
   Serial.println("READY");
-
+  delay(3000);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Avvicina la");
+  lcd.setCursor(0,1);
+  lcd.print("tessera...");
 }
 
 void loop() {
@@ -87,6 +116,8 @@ void loop() {
   }
   ID.toUpperCase();
   Serial.println(ID);
+  lcd.clear();
+  lcd.print("controllo...");
 
   client.post("/accesses/"+ID);
   
@@ -98,6 +129,8 @@ void loop() {
   Serial.print("Response: ");
   Serial.println(response);
   client.stop();
+  lcd.clear();
+  lcd.print(response);
 
   if(statusCode == 200) {
     Serial.println("VARCO APERTO");
@@ -107,6 +140,8 @@ void loop() {
     openGate(LED_YELLOW);
   } else {
     Serial.println("ACCESSO NEGATO"); 
+    lcd.clear();
+    lcd.print("Accesso negato");
     digitalWrite(BUZZER, HIGH);
     digitalWrite(LED_RED, HIGH);
     delay(500);
@@ -121,6 +156,11 @@ void loop() {
 
   ID = "";
   mfrc522.PICC_HaltA();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Avvicina la");
+  lcd.setCursor(0,1);
+  lcd.print("tessera...");
 }
 
 void openGate(int led) {
